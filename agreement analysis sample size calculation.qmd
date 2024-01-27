@@ -1,0 +1,47 @@
+---
+title: "Agreement analysis sample size calculation"
+format: html
+editor: visual
+---
+
+```{r}
+library(tidyverse)
+```
+
+### Pre RT Radiotherapy files path
+
+```{r}
+prert_dir <- "PreRadiotherapy-Results"
+prert_files <- list.files(prert_dir)
+```
+
+### Unique Id's and sample id preparation
+
+```{r}
+prert_size = ceiling((length(prert_files)*0.40))
+
+data.frame(id = prert_files) |> 
+  mutate(id = str_c(id, "_preRT")) |> distinct() |>
+  mutate(sample = ifelse(id %in% sample(id, prert_size), 1, 0)) -> prert
+```
+
+```{r}
+prert |> group_by(sample) |> count()
+```
+
+### Post RT Radiotherapy files path
+
+```{r}
+postrt_dir <- "PostRT_DICOM_segmentation_results"
+postrt_files <- list.files(postrt_dir)
+```
+
+```{r}
+data.frame(id = postrt_files) |> separate(id, into = c("id", "a", "b")) |> 
+  mutate(str_c(id, "_postRT")) |> select(id) |> distinct() |> 
+  mutate(sample = ifelse(id %in% sample(id, ceiling(length(id)*0.4)),1,0)) -> postrt
+```
+
+```{r}
+postrt |> group_by(sample) |> count()
+```
